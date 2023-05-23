@@ -14,13 +14,19 @@ using namespace std;
 */
 class DataLoader {
 public:
+	int count = 0;
 	vector<string> header;
 	vector<vector<string>> file;
+	vector<int> count_null;
+
 	DataLoader(string path, string type);
+	vector<vector<string>> Bootstrap();
 };
 
 /*
-* Load data into memory
+* Load data into memory.
+* NOTICE: This is ONLY suitable for Titanic dataset. DO NOT use it on other datasets directly.
+* 
 * @params path: path of dataset file
 * @params type: type of dataset file, only support csv file up to now
 */
@@ -47,9 +53,22 @@ DataLoader::DataLoader(const string path, const string type) {
 		vector<string> words;
 		sin.clear();
 		sin.str(line);
+		int index = 0, pos = 0;
 		while (getline(sin, word, ',')) {
+			if (pos == 4 && count != 0) {
+				pos++;
+				continue;
+			}
 			words.push_back(word);
+			if (count == 0)
+				this->count_null.push_back(0);
+			else
+				if (word == "")
+					this->count_null[index] += 1;
+			index++;
+			pos++;
 		}
+
 		if (count == 0)
 			this->header = words;
 		else
@@ -57,6 +76,25 @@ DataLoader::DataLoader(const string path, const string type) {
 		count++;
 	}
 	csv_data.close();
-	cout << "data load: successed\n";
+	this->count = count - 1;
+
+	cout << "-----------------dataset info-----------------\n";
+	cout << "count of records: " << this->count << "\n";
+	cout << "unknown values proportion:\n";
+	for (int i = 0; i < this->header.size(); i++) {
+		cout << this->header[i] << ": ";
+		cout << float(this->count_null[i]) / float(this->count) << "\n";
+	}
+	cout << "------------------info end-------------------\n";
 	return;
+}
+
+/*
+* Classicial bootstrap method. Generalize data from dataset provided by random sampling 
+* with replacement. It will be used to complete bagging.
+* 
+* REFERENCE: "Bagging Predictors" by Leo Breiman, 1996.
+*/
+vector<vector<string>> DataLoader::Bootstrap() {
+
 }

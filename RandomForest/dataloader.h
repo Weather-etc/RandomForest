@@ -11,7 +11,11 @@ using namespace std;
 
 class DataLoader {
 public:
+	int count = 0;
 	vector<string> header;
 	vector<vector<string>> file;
+	vector<int> count_null;
+
 	DataLoader(string path, string type);
+	vector<vector<string>> Bootstrap();
 };
