@@ -127,7 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dataloader.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dataloader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\PythonProject\Local\Kaggle\Titanic\data\test.csv" />
+    <None Include="..\..\..\PythonProject\Local\Kaggle\Titanic\data\train.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
