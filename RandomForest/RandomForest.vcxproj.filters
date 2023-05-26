@@ -24,9 +24,27 @@
     <ClCompile Include="dataloader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="randomforest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="randomtree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="table.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dataloader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="randomforest.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="randomtree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="table.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

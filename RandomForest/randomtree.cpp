@@ -1,0 +1,66 @@
+#include <vector>
+#include <string>
+#include <map>
+#include <iostream>
+#include <numeric>
+
+using namespace std;
+
+/*
+* node of random decision tree
+*/
+struct Node {
+	bool isLeaf;	// True if it is a leaf node, False if not
+	string attr;	// for internal node: record attr; for leaf node: record result
+	map<string, Node> branch_map;	// record branches
+};
+
+struct RootNode {
+	Node* node;
+};
+
+class RandomTree_base {
+public:
+	RootNode root;
+	int maxDep;
+	int numFea;
+
+	RandomTree_base(int maxdep, int numfea);
+	virtual void build(vector<vector<string>> X, vector<string> y) = 0;
+};
+
+RandomTree_base::RandomTree_base(int maxdep, int numfea) {
+	this->maxDep = maxdep;
+	this->numFea = numfea;
+}
+
+// subclass: Used for randomforest-RI. See "Random Forest" by Leo Breiman, 2001
+class RandomTree_RI : public RandomTree_base {
+public:
+	RandomTree_RI(int maxdep, int numfea) : RandomTree_base(maxdep, numfea) {};
+	void build(vector<vector<string>> X, vector<string>y);
+};
+
+void RandomTree_RI::build(vector<vector<string>> X, vector<string> y) {
+	int columns = X[0].size();
+	// do some input checks
+	if (columns < this->numFea) {
+		cout << "ERROR in tree building: " << "only " << columns << " variables are available but "
+			<< this->numFea << " are requested\n";
+		exit(1);
+	}
+	if (X.size() != y.size()) {
+		cout << "ERROR in tree building: " << "X and y size donot match\n";
+		exit(1);
+	}
+
+	// randomly select features: Knuth Durstenfeld Shuffle Alg.
+	vector<int> indexes(columns);
+	vector<int> selected(this->numFea);
+	iota(indexes.begin(), indexes.end(), 1);
+	for (int i = 0; i < this->numFea; i++) {
+		int j = rand() % (columns - i);
+		swap(indexes[j], indexes[columns - i - 1]);
+		selected[i] = indexes[columns - i - 1];
+	}
+}
