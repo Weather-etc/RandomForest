@@ -4,14 +4,15 @@
 #include <map>
 #include <iostream>
 
+#include "dataloader.h"
 using namespace std;
 
 /*
 * node of random decision tree
 */
 struct Node {
-	bool isLeaf;	// True if it is a leaf node, False if not
-	string attr;	// for internal node: record attr; for leaf node: record result
+	bool isLeaf;					// True if it is a leaf node, False if not
+	string attr;					// for internal node: record attr; for leaf node: record result
 	map<string, Node> branch_map;	// record branches
 };
 
@@ -24,11 +25,14 @@ public:
 	RootNode root;
 	int maxDep;
 	int numFea;
-
-	RandomTree_base(int maxdep, int numfea);
-	virtual void build(vector<vector<string>> X, vector<string> y) = 0;
 };
 
 class RandomTree_RI : public RandomTree_base {
+public:
+	RandomTree_RI(int maxdep, int numfea);
+	void build(vector<vector<Field>> X, vector<int> y);
+	void split(vector<vector<Field>> X, vector<int> y, Node currNode, int depth);
+
+	string decideRes(vector<int> y);
 
 };
