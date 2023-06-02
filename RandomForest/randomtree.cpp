@@ -9,6 +9,17 @@
 
 using namespace std;
 
+struct Var_res {
+	float IG;
+	int index;
+};
+
+struct Group_res {
+	vector<vector<vector<Field>>> X_res;
+	vector<vector<int>> y_res;
+	vector<Field> values;
+};
+
 /*====================================  RandomForest_base  ============================================*/
 
 /*
@@ -19,17 +30,6 @@ struct Node {
 	string attr;					// for internal node: record attr
 	string res;						//for leaf node: record result
 	map<Field, Node> branch_map;	// record branches
-};
-
-struct Var_res {
-	float IG;
-	int index;
-};
-
-struct Group_res {
-	vector<vector<vector<Field>>> X_res;
-	vector<vector<int>> y_res;
-	vector<Field> values;
 };
 
 class RandomTree_base {
@@ -54,7 +54,37 @@ vector<Var_res> RandomTree_base::Var_criterion
 }
 
 Group_res RandomTree_base::GroupData(vector<vector<Field>> X, vector<int> y, int fea) {
-	
+	Group_res res;
+	map<string, vector<int>> res_map;
+	map<string, int> count_map;
+	for (int i = 0; i < X[fea].size(); i++) {
+		string str = X[fea][i].str_value;
+		if (count_map[str] == 0) {
+			count_map[str]++;
+			vector<int> initial = { i };
+			res_map[str] = initial;
+		}
+		else {
+			count_map[str]++;
+			res_map[str].push_back(i);
+		}
+	}
+	for (auto it : res_map) {
+		vector<vector<Field>> X_state;
+		vector<int> y_state;
+		vector<int> index_state = it.second;
+		for (auto it0 : index_state) {
+			vector<Field> X_state_rec;
+			for (int i = 0; i < X.size(); i++) 
+				X_state_rec.push_back(X[i][it0]);
+			X_state.push_back(X_state_rec);
+			y_state.push_back(y[it0]);
+		}
+		res.X_res.push_back(X_state);
+		res.y_res.push_back(y_state);
+		res.values.push_back(X_state[fea][0]);
+	}
+	return res;
 }
 
 /*====================================  RandomForest_RI  ==============================================*/
