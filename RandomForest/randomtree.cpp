@@ -4,20 +4,23 @@
 #include <iostream>
 #include <numeric>
 #include <map>
+#include <utility>
+#include <algorithm>
 
 #include "dataloader.h"
 
 using namespace std;
 
-struct Var_res {
-	float IG;
-	int index;
+struct VarRes {
+	float Var;
+	vector<string> BranchR;
 };
 
-struct Group_res {
-	vector<vector<vector<Field>>> X_res;
-	vector<vector<int>> y_res;
-	vector<Field> values;
+struct GroupRes {
+	vector<vector<Field>> L_Res;
+	vector<int> L_Y;
+	vector<vector<Field>> R_Res;
+	vector<int> R_Y;
 };
 
 /*====================================  RandomForest_base  ============================================*/
@@ -29,7 +32,8 @@ struct Node {
 	bool isLeaf;					// True if it is a leaf node, False if not
 	string attr;					// for internal node: record attr
 	string res;						//for leaf node: record result
-	map<Field, Node> branch_map;	// record branches
+	vector<string> R_Vec;
+	Node* L_Child, *R_Child;
 };
 
 class RandomTree_base {
@@ -39,8 +43,10 @@ public:
 	int numFea;
 
 	RandomTree_base(int maxdep, int numfea);
-	vector<Var_res> Var_criterion(vector<vector<Field>> X, vector<int> y, vector<int> columns);
-	Group_res GroupData(vector<vector<Field>> X, vector<int> y, int fea);
+	vector<VarRes> Var_Criterion
+	(vector<vector<Field>> X, vector<int> y, vector<int> columns);
+	GroupRes GroupData
+	(vector<vector<Field>> X, vector<int> y, vector<string> BranchR, int fea);
 };
 
 RandomTree_base::RandomTree_base(int maxdep, int numfea) {
@@ -48,41 +54,80 @@ RandomTree_base::RandomTree_base(int maxdep, int numfea) {
 	this->numFea = numfea;
 }
 
-vector<Var_res> RandomTree_base::Var_criterion
+vector<VarRes> RandomTree_base::Var_Criterion
 (vector<vector<Field>> X, vector<int> y, vector<int> columns) {
-
+	vector<VarRes> res;
+	for (auto it : columns) {
+		map<string, pair<int, int>> CountTimes;
+		vector<pair<string, pair<int, int>>> times_vec;
+		for (int i = 0; i < X[0].size(); i++) {
+			if (y[i] == 1)
+				CountTimes[X[it][i].str_value].second++;
+			else
+				CountTimes[X[it][i].str_value].first++;
+		}
+		for (auto it0 : CountTimes) 
+			times_vec.push_back(pair<string, pair<int, int>>(it0.first, it0.second));
+		sort(times_vec.begin(), times_vec.end(),
+			[](pair<string, pair<int, int>> a, pair<string, pair<int, int>> b) 
+			{return a.second.second < b.second.second; });
+		int index = -1;
+		float min = INFINITY;
+		int total = X[0].size();
+		int total_state = 0;
+		int total_L_class0 = 0;
+		int total_L_class1 = 0;
+		int total_R_class0 = 0;
+		int total_R_class1 = 0;
+		for (int i = 0; i < times_vec.size(); i++) {
+			total_R_class0 += times_vec[i].second.first;
+			total_R_class1 += times_vec[i].second.second;
+		}
+		for (int i = 0; i < times_vec.size(); i++) {
+			total_state += times_vec[i].second.first + times_vec[i].second.second;
+			total_L_class0 += times_vec[i].second.first;
+			total_L_class1 += times_vec[i].second.second;
+			total_R_class0 -= times_vec[i].second.first;
+			total_R_class1 -= times_vec[i].second.second;
+			float state = total_L_class0 * total_L_class1 / (total * total_state) +
+				total_R_class0 * total_R_class1 / (total * (total - total_state));
+			if (state < min) {
+				min = state;
+				index = i;
+			}
+		}
+		VarRes res_state;
+		res_state.Var = min;
+		for (int i = index + 1; i < times_vec.size(); i++)
+			res_state.BranchR.push_back(times_vec[i].first);
+		res.push_back(res_state);
+	}
+	return res;
 }
 
-Group_res RandomTree_base::GroupData(vector<vector<Field>> X, vector<int> y, int fea) {
-	Group_res res;
-	map<string, vector<int>> res_map;
-	map<string, int> count_map;
-	for (int i = 0; i < X[fea].size(); i++) {
-		string str = X[fea][i].str_value;
-		if (count_map[str] == 0) {
-			count_map[str]++;
-			vector<int> initial = { i };
-			res_map[str] = initial;
+GroupRes RandomTree_base::GroupData
+(vector<vector<Field>> X, vector<int> y, vector<string> BranchR, int fea) {
+	GroupRes res;
+	for (int i = 0; i < X[0].size(); i++) {
+		bool flag = false;
+		string state = X[fea][i].str_value;
+		for (auto it : BranchR)
+			if (it == state)
+				flag = true;
+		if (flag == true) {
+			vector<Field> row(X.size());
+			for (int j = 0; j < X.size(); j++)
+				row.push_back(X[j][i]);
+			res.R_Res.push_back(row);
+			res.R_Y.push_back(y[i]);
 		}
 		else {
-			count_map[str]++;
-			res_map[str].push_back(i);
+			vector<Field> row(X.size());
+			for (int j = 0; j < X.size(); j++)
+				row.push_back(X[j][i]);
+			res.L_Res.push_back(row);
+			res.L_Y.push_back(y[i]);
 		}
-	}
-	for (auto it : res_map) {
-		vector<vector<Field>> X_state;
-		vector<int> y_state;
-		vector<int> index_state = it.second;
-		for (auto it0 : index_state) {
-			vector<Field> X_state_rec;
-			for (int i = 0; i < X.size(); i++) 
-				X_state_rec.push_back(X[i][it0]);
-			X_state.push_back(X_state_rec);
-			y_state.push_back(y[it0]);
-		}
-		res.X_res.push_back(X_state);
-		res.y_res.push_back(y_state);
-		res.values.push_back(X_state[fea][0]);
 	}
 	return res;
 }
@@ -94,7 +139,7 @@ class RandomTree_RI : public RandomTree_base {
 public:
 	RandomTree_RI(int maxdep, int numfea) : RandomTree_base(maxdep, numfea) {};
 	void build(vector<vector<Field>> X, vector<int> y);
-	void split(vector<vector<Field>> X, vector<int> y, Node currNode, int depth);
+	Node split(vector<vector<Field>> X, vector<int> y, int depth);
 
 	int decideRes(vector<int> y);
 };
@@ -111,7 +156,7 @@ void RandomTree_RI::build(vector<vector<Field>> X, vector<int> y) {
 		cout << "ERROR in tree building: " << "X and y size donot match\n";
 		exit(1);
 	}
-	split(X, y, this->root, 0);
+	root = split(X, y, 0);
 	return;
 }
 
@@ -134,13 +179,13 @@ int RandomTree_RI::decideRes(vector<int> y) {
 * REFERENCE: 1. "Classification and Regression Trees", by L. Breiman et.al
 *			2. "Random Forest", by Leo Breiman
 */
-void RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, Node currNode, int depth) {
+Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	// TODO: stop condition
 	if (depth >= this->maxDep) {
 		Node leafNode;
 		leafNode.isLeaf = true;
 		leafNode.res = decideRes(y);
-		return;
+		return leafNode;
 	}
 
 	// randomly select features: Knuth Durstenfeld Shuffle Alg.
@@ -155,21 +200,26 @@ void RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, Node currNode,
 	}
 
 	// do split using variance criterion
-	vector<Var_res> info_gain = Var_criterion(X, y, selected);
-	// TODO: select best feature, save in (int)fea_sel
-	int fea_sel;
-
-	currNode.res = decideRes(y);
-	currNode.attr = fea_sel;
-	currNode.isLeaf = false;
-	Group_res grouped = GroupData(X, y, fea_sel);
-	vector<vector<vector<Field>>> X_grouped = grouped.X_res;
-	vector<vector<int>> y_grouped = grouped.y_res;
-	vector<Field> values = grouped.values;
-	for (int i = 0; i < X_grouped.size(); i++) {
-		Node newNode;
-		currNode.branch_map.insert(pair<Field, Node>(values[i], newNode));
-		split(X_grouped[i], y_grouped[i], newNode, depth + 1);
+	vector<VarRes> VarRes = Var_Criterion(X, y, selected);
+	// select best feature, save in (int)fea_sel. It should has minimal variance
+	float min = VarRes[0].Var;
+	vector<string> BranchR;
+	int FeaSel = 0;
+	for (int i = 0; i < VarRes.size(); i++) {
+		if (VarRes[i].Var < min) {
+			min = VarRes[i].Var;
+			BranchR = VarRes[i].BranchR;
+			FeaSel = i;
+		}
 	}
-	return;
+
+	Node currNode;
+	currNode.res = decideRes(y);
+	currNode.attr = FeaSel;
+	currNode.isLeaf = false;
+	currNode.R_Vec = BranchR;
+	GroupRes grouped = GroupData(X, y, BranchR, FeaSel);
+	currNode.L_Child = &split(grouped.L_Res, grouped.L_Y, depth + 1);
+	currNode.R_Child = &split(grouped.R_Res, grouped.R_Y, depth + 1);
+	return currNode;
 }

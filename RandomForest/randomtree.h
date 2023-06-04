@@ -3,36 +3,56 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <numeric>
+#include <map>
+#include <utility>
+#include <algorithm>
 
 #include "dataloader.h"
 using namespace std;
+
+struct VarRes {
+	float Var;
+	vector<string> BranchR;
+};
+
+struct GroupRes {
+	vector<vector<Field>> L_Res;
+	vector<int> L_Y;
+	vector<vector<Field>> R_Res;
+	vector<int> R_Y;
+};
 
 /*
 * node of random decision tree
 */
 struct Node {
 	bool isLeaf;					// True if it is a leaf node, False if not
-	string attr;					// for internal node: record attr; for leaf node: record result
-	map<string, Node> branch_map;	// record branches
-};
-
-struct RootNode {
-	Node* node;
+	string attr;					// for internal node: record attr
+	string res;						//for leaf node: record result
+	vector<string> R_Vec;
+	Node* L_Child, * R_Child;
 };
 
 class RandomTree_base {
 public:
-	RootNode root;
+	Node root;
 	int maxDep;
 	int numFea;
+
+	RandomTree_base(int maxdep, int numfea);
+	vector<VarRes> Var_Criterion
+	(vector<vector<Field>> X, vector<int> y, vector<int> columns);
+	GroupRes GroupData
+	(vector<vector<Field>> X, vector<int> y, vector<string> BranchR, int fea);
 };
 
+// subclass: Used for randomforest-RI. See "Random Forest" by Leo Breiman, 2001
 class RandomTree_RI : public RandomTree_base {
 public:
-	RandomTree_RI(int maxdep, int numfea);
+	RandomTree_RI(int maxdep, int numfea) : RandomTree_base(maxdep, numfea) {};
 	void build(vector<vector<Field>> X, vector<int> y);
-	void split(vector<vector<Field>> X, vector<int> y, Node currNode, int depth);
+	Node split(vector<vector<Field>> X, vector<int> y, int depth);
 
-	string decideRes(vector<int> y);
-
+	int decideRes(vector<int> y);
 };
