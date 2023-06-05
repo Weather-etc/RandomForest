@@ -60,10 +60,10 @@ RandomTree_base::RandomTree_base(int maxdep, int numfea, int index) {
 vector<VarRes> RandomTree_base::Var_Criterion
 (vector<vector<Field>> X, vector<int> y, vector<int> columns) {
 	vector<VarRes> res;
-	//cout << "X[0].size: " << X[0].size() << "\n";
-	//cout << "X.size: " << X.size() << "    \n";
+	cout << "********************************\n";
+	cout << y.size() << "\n";
 	for (auto it : columns) {
-		cout << it << "\n";
+		cout << "enter\n";
 		map<string, pair<int, int>> CountTimes;
 		vector<pair<string, pair<int, int>>> times_vec;
 		for (int i = 0; i < X[0].size(); i++) {
@@ -77,6 +77,7 @@ vector<VarRes> RandomTree_base::Var_Criterion
 		sort(times_vec.begin(), times_vec.end(),
 			[](pair<string, pair<int, int>> a, pair<string, pair<int, int>> b) 
 			{return a.second.second < b.second.second; });
+		cout << "here\n";
 		
 		int index = -1;
 		float min = INFINITY;
@@ -90,6 +91,9 @@ vector<VarRes> RandomTree_base::Var_Criterion
 			total_R_class0 += times_vec[i].second.first;
 			total_R_class1 += times_vec[i].second.second;
 		}
+		cout << "here0\n";
+		cout << times_vec.size() << "\n";
+
 		for (int i = 0; i < times_vec.size() - 1; i++) {
 			total_state += times_vec[i].second.first + times_vec[i].second.second;
 			total_L_class0 += times_vec[i].second.first;
@@ -103,6 +107,8 @@ vector<VarRes> RandomTree_base::Var_Criterion
 				index = i;
 			}
 		}
+		cout << "here00\n";
+
 		VarRes res_state;
 		res_state.Var = min;
 		for (int i = index + 1; i < times_vec.size(); i++)
@@ -183,7 +189,7 @@ void RandomTree_RI::build(vector<vector<Field>> X, vector<int> y) {
 		cout << "ERROR in tree building: " << "X and y size donot match\n";
 		exit(1);
 	}
-	cout << "ysize: " << y.size() << "\n";
+	// cout << "ysize: " << y.size() << "\n";
 	root = split(X, y, 0);
 	return;
 }
@@ -226,8 +232,8 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 		swap(indexes[j], indexes[columns - i - 1]);
 		selected[i] = indexes[columns - i - 1];
 	}
-
 	cout << "select completed\n";
+
 	// do split using variance criterion
 	vector<VarRes> VarRes = Var_Criterion(X, y, selected);
 	// select best feature, save in (int)fea_sel. It should has minimal variance
@@ -242,20 +248,27 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 			FeaSel = i;
 		}
 	}
-
 	cout << "split completed\n";
+
 	Node currNode;
 	currNode.res = decideRes(y);
-
 	cout << "decideRes completed\n";
 
 	currNode.attr = FeaSel;
 	currNode.isLeaf = false;
 	currNode.R_Vec = BranchR;
+
+	cout << "fea: " << FeaSel << "\n";
+	for (auto it : BranchR)
+		cout << it << "    ";
+	cout << "\n";
+
 	GroupRes grouped = GroupData(X, y, BranchR, FeaSel);
 
-	cout << grouped.L_Res.size() << "\n";
-	cout << grouped.R_Res.size() << "\n";
+	cout << "/**/\n";
+	cout << grouped.L_Res[0].size() << "\n";
+	cout << grouped.R_Res[0].size() << "\n";
+	cout << "/**/\n";
 
 	cout << "recursiving\n";
 	Node LNode = split(grouped.L_Res, grouped.L_Y, depth + 1);
