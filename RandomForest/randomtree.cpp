@@ -60,7 +60,10 @@ RandomTree_base::RandomTree_base(int maxdep, int numfea, int index) {
 vector<VarRes> RandomTree_base::Var_Criterion
 (vector<vector<Field>> X, vector<int> y, vector<int> columns) {
 	vector<VarRes> res;
+	//cout << "X[0].size: " << X[0].size() << "\n";
+	//cout << "X.size: " << X.size() << "    \n";
 	for (auto it : columns) {
+		cout << it << "\n";
 		map<string, pair<int, int>> CountTimes;
 		vector<pair<string, pair<int, int>>> times_vec;
 		for (int i = 0; i < X[0].size(); i++) {
@@ -105,8 +108,6 @@ vector<VarRes> RandomTree_base::Var_Criterion
 		for (int i = index + 1; i < times_vec.size(); i++)
 			res_state.BranchR.push_back(times_vec[i].first);
 		res.push_back(res_state);
-
-		cout << "one completed\n";
 	}
 	return res;
 }
@@ -114,6 +115,8 @@ vector<VarRes> RandomTree_base::Var_Criterion
 GroupRes RandomTree_base::GroupData
 (vector<vector<Field>> X, vector<int> y, vector<string> BranchR, int fea) {
 	GroupRes res;
+	res.L_Res.resize(X.size());
+	res.R_Res.resize(X.size());
 	for (int i = 0; i < X[0].size(); i++) {
 		bool flag = false;
 		string state = X[fea][i].str_value;
@@ -121,18 +124,13 @@ GroupRes RandomTree_base::GroupData
 			if (it == state)
 				flag = true;
 		if (flag == true) {
-			vector<Field> row(X.size());
 			for (int j = 0; j < X.size(); j++)
-				row.push_back(X[j][i]);
-			res.R_Res.push_back(row);
+				res.R_Res[j].push_back(X[j][i]);
 			res.R_Y.push_back(y[i]);
 		}
 		else {
-			vector<Field> row(X.size());
-			for (int j = 0; j < X.size(); j++) {
-				row.push_back(X[j][i]);
-			}
-			res.L_Res.push_back(row);
+			for (int j = 0; j < X.size(); j++)
+				res.L_Res[j].push_back(X[j][i]);
 			res.L_Y.push_back(y[i]);
 		}
 	}
@@ -255,6 +253,9 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	currNode.isLeaf = false;
 	currNode.R_Vec = BranchR;
 	GroupRes grouped = GroupData(X, y, BranchR, FeaSel);
+
+	cout << grouped.L_Res.size() << "\n";
+	cout << grouped.R_Res.size() << "\n";
 
 	cout << "recursiving\n";
 	Node LNode = split(grouped.L_Res, grouped.L_Y, depth + 1);
