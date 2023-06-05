@@ -129,14 +129,14 @@ DataLoader::DataLoader(const string path, const string type) {
 	csv_data.close();
 	this->count = count - 1;
 
-	cout << "-----------------dataset info-----------------\n";
+	cout << "\n-----------------dataset info-----------------\n";
 	cout << "count of records: " << this->count << "\n";
 	cout << "unknown values proportion:\n";
 	for (int i = 0; i < this->header.size(); i++) {
 		cout << this->header[i] << ": ";
 		cout << float(this->count_null[i]) / float(this->count) << "\n";
 	}
-	cout << "------------------info end-------------------\n";
+	cout << "---------------------------------------------\n";
 	return;
 }
 

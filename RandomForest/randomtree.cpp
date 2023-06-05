@@ -60,58 +60,50 @@ RandomTree_base::RandomTree_base(int maxdep, int numfea, int index) {
 vector<VarRes> RandomTree_base::Var_Criterion
 (vector<vector<Field>> X, vector<int> y, vector<int> columns) {
 	vector<VarRes> res;
-	cout << "********************************\n";
-	cout << y.size() << "\n";
 	for (auto it : columns) {
-		cout << "enter\n";
 		map<string, pair<int, int>> CountTimes;
 		vector<pair<string, pair<int, int>>> times_vec;
-		for (int i = 0; i < X[0].size(); i++) {
+		for (int i = 0; i < y.size(); i++) {
 			if (y[i] == 1) 
 				CountTimes[X[it][i].str_value].second++;
 			else
 				CountTimes[X[it][i].str_value].first++;
 		}
-		for (auto it0 : CountTimes) 
+		for (auto it0 : CountTimes)
 			times_vec.push_back(pair<string, pair<int, int>>(it0.first, it0.second));
 		sort(times_vec.begin(), times_vec.end(),
 			[](pair<string, pair<int, int>> a, pair<string, pair<int, int>> b) 
 			{return a.second.second < b.second.second; });
-		cout << "here\n";
 		
 		int index = -1;
 		float min = INFINITY;
-		int total = X[0].size();
-		int total_state = 0;
-		int total_L_class0 = 0;
-		int total_L_class1 = 0;
-		int total_R_class0 = 0;
-		int total_R_class1 = 0;
+		float total = X[0].size();
+		float total_state = 0.0;
+		float total_L_class0 = 0.0;
+		float total_L_class1 = 0.0;
+		float total_R_class0 = 0.0;
+		float total_R_class1 = 0.0;
 		for (int i = 0; i < times_vec.size(); i++) {
 			total_R_class0 += times_vec[i].second.first;
 			total_R_class1 += times_vec[i].second.second;
 		}
-		cout << "here0\n";
-		cout << times_vec.size() << "\n";
-
 		for (int i = 0; i < times_vec.size() - 1; i++) {
 			total_state += times_vec[i].second.first + times_vec[i].second.second;
 			total_L_class0 += times_vec[i].second.first;
 			total_L_class1 += times_vec[i].second.second;
 			total_R_class0 -= times_vec[i].second.first;
 			total_R_class1 -= times_vec[i].second.second;
-			float state = total_L_class0 * total_L_class1 / (total * total_state) +
+			float state = total_L_class0 * total_L_class1 / (total * total_state) + 
 				total_R_class0 * total_R_class1 / (total * (total - total_state));
 			if (state < min) {
 				min = state;
 				index = i;
 			}
 		}
-		cout << "here00\n";
 
 		VarRes res_state;
 		res_state.Var = min;
-		for (int i = index + 1; i < times_vec.size(); i++)
+		for (int i = index + 1; i < times_vec.size(); i++) 
 			res_state.BranchR.push_back(times_vec[i].first);
 		res.push_back(res_state);
 	}
@@ -189,7 +181,6 @@ void RandomTree_RI::build(vector<vector<Field>> X, vector<int> y) {
 		cout << "ERROR in tree building: " << "X and y size donot match\n";
 		exit(1);
 	}
-	// cout << "ysize: " << y.size() << "\n";
 	root = split(X, y, 0);
 	return;
 }
@@ -226,7 +217,7 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	int columns = X.size();
 	vector<int> indexes(columns);
 	vector<int> selected(this->numFea);
-	iota(indexes.begin(), indexes.end(), 1);
+	iota(indexes.begin(), indexes.end(), 0);
 	for (int i = 0; i < this->numFea; i++) {
 		int j = rand() % (columns - i);
 		swap(indexes[j], indexes[columns - i - 1]);
@@ -235,19 +226,19 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	cout << "select completed\n";
 
 	// do split using variance criterion
-	vector<VarRes> VarRes = Var_Criterion(X, y, selected);
+	vector<VarRes> CriRes = Var_Criterion(X, y, selected);
 	// select best feature, save in (int)fea_sel. It should has minimal variance
-	float min = VarRes[0].Var;
+	float min = CriRes[0].Var;
+	int index = 0;
 	vector<string> BranchR;
-	int FeaSel = 0;
+	int FeaSel = -1;
 	cout << "criteria completed\n";
-	for (int i = 0; i < VarRes.size(); i++) {
-		if (VarRes[i].Var < min) {
-			min = VarRes[i].Var;
-			BranchR = VarRes[i].BranchR;
-			FeaSel = i;
-		}
-	}
+	for (int i = 0; i < CriRes.size(); i++) 
+		if (CriRes[i].Var < min)
+			index = i;
+	BranchR = CriRes[index].BranchR;
+	FeaSel = selected[index];
+	cout << "FeaSel: " << FeaSel << "\n";
 	cout << "split completed\n";
 
 	Node currNode;
@@ -257,18 +248,7 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	currNode.attr = FeaSel;
 	currNode.isLeaf = false;
 	currNode.R_Vec = BranchR;
-
-	cout << "fea: " << FeaSel << "\n";
-	for (auto it : BranchR)
-		cout << it << "    ";
-	cout << "\n";
-
 	GroupRes grouped = GroupData(X, y, BranchR, FeaSel);
-
-	cout << "/**/\n";
-	cout << grouped.L_Res[0].size() << "\n";
-	cout << grouped.R_Res[0].size() << "\n";
-	cout << "/**/\n";
 
 	cout << "recursiving\n";
 	Node LNode = split(grouped.L_Res, grouped.L_Y, depth + 1);
