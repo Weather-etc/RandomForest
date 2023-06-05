@@ -78,36 +78,52 @@ DataLoader::DataLoader(const string path, const string type) {
 	int count = 0;
 	while (getline(csv_data, line)) {
 		vector<string> words;
+		vector<string> WordsRes;
+		int index = 0;
 		sin.clear();
 		sin.str(line);
-		int index = 0, pos = 0;
-		while (getline(sin, word, ',')) {
-			if (pos == 4 && count != 0) {
-				pos++;
+		while (getline(sin, word, ','))
+			words.push_back(word);
+		for (int i = 0; i < words.size(); i++) {
+			if (words[i] == "") {
+				WordsRes.push_back(words[i]);
+				count_null[index]++;
+				index++;
 				continue;
 			}
-			words.push_back(word);
-			if (count == 0)
-			{
-				this->count_null.push_back(0);
-				this->header.push_back(word);
-				this->isClass.push_back(true);
+			if (words[i][0] == '"') {
+				string str = words[i];
+				i++;
+				string state = words[i];
+				while (state[state.length() - 1] != '"') {
+					str = str + "," + state;
+					i++;
+					state = words[i];
+				}
+				WordsRes.push_back(str);
+				index++;
+				continue;
 			}
-			else
-			{
-				Field newField;
-				newField.type = 2;
-				newField.str_value = word;
-				if (word == "")
-					this->count_null[index] += 1;
-				this->file[index].push_back(newField);
-			}
+			WordsRes.push_back(words[i]);
 			index++;
-			pos++;
 		}
-
-		if (count == 0)
-			this->file.resize(this->header.size());
+		if (count == 0) {
+			header = WordsRes;
+			count_null.resize(header.size());
+			file.resize(header.size());
+		}
+		else {
+			while (WordsRes.size() < header.size()) {
+				WordsRes.push_back("");
+				count_null[WordsRes.size() - 1]++;
+			}
+			for (int i = 0; i < WordsRes.size(); i++) {
+				Field NewField;
+				NewField.type = 2;
+				NewField.str_value = WordsRes[i];
+				file[i].push_back(NewField);
+			}
+		}
 		count++;
 	}
 	csv_data.close();
