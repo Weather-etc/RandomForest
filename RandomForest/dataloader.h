@@ -11,12 +11,7 @@
 
 using namespace std;
 
-bool check_validity(int value, int i, int j) {
-	if (value < i || value > j)
-		return false;
-	else
-		return true;
-}
+bool check_validity(int value, int i, int j);
 
 struct Boost_data {
 	vector<vector<string>> data;

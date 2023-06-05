@@ -125,10 +125,12 @@ DataLoader::DataLoader(const string path, const string type) {
 }
 
 bool DataLoader::removeColumn(int index) {
-	check_validity(index, 0, this->header.size() - 1);
+	if (!check_validity(index, 0, this->header.size() - 1))
+		return false;
 	this->file.erase(this->file.begin() + index);
 	this->header.erase(this->header.begin() + index);
 	this->count_null.erase(this->count_null.begin() + index);
+	return true;
 }
 
 bool DataLoader::ColtoInt(int index) {
