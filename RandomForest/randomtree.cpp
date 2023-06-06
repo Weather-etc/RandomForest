@@ -145,10 +145,18 @@ vector<int> RandomTree_base::pred(vector<vector<Field>> X) {
 			for (int j = 0; j < state.R_Vec.size(); j++)
 				if (X[attr][i].str_value == state.R_Vec[j]) 
 					flag = true;
-			if (flag == false)
-				state = *state.L_Child;
-			else
-				state = *state.R_Child;
+			if (flag == false) {
+				if (state.L_Child != nullptr)
+					state = *state.L_Child;
+				else
+					break;
+			}
+			else {
+				if (state.R_Child != nullptr)
+					state = *state.R_Child;
+				else
+					break;
+			}
 		}
 		res[i] = state.res;
 	}
@@ -212,6 +220,8 @@ Node* RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 		leafNode->res = decideRes(y);
 		return leafNode;
 	}
+	if (y.size() == 0)
+		return nullptr;
 
 	// randomly select features: Knuth Durstenfeld Shuffle Alg.
 	int columns = X.size();

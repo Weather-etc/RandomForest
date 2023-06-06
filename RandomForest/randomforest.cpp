@@ -25,6 +25,7 @@ class RandomForest {
 public:
 	queue<RandomTree_RI> RiTrees;
 	map<int, string> IntyDic;
+	int Size = 0, Depth = 0, NumFea = 0;
 
 	RandomForest(int size, int depth, int numfea);
 	vector<int> _EncodeY(vector<string> y);
@@ -33,6 +34,9 @@ public:
 };
 
 RandomForest::RandomForest(int size, int depth, int numfea) {
+	Size = size;
+	Depth = depth;
+	NumFea = numfea;
 	for (int i = 0; i < size; i++) {
 		RiTrees.push(RandomTree_RI(depth, numfea, i));
 	}
@@ -47,6 +51,7 @@ vector<int> RandomForest::_EncodeY(vector<string> y) {
 		yvalues.insert(it);
 	for (auto it : yvalues) {
 		StryDic[it] = encode;
+		IntyDic[encode] = it;
 		encode++;
 	}
 	for (auto it : y) {
@@ -57,6 +62,10 @@ vector<int> RandomForest::_EncodeY(vector<string> y) {
 }
 
 void RandomForest::build(vector<vector<Field>> X, vector<string> y) {
+	if (X.size() < NumFea) {
+		cout << "ERROR: too much features in RandomForest.build()";
+		exit(1);
+	}
 	RandomTree_RI state = RiTrees.front();
 	int flag = state.ID;
 	vector<int> y_encoded = _EncodeY(y);
@@ -74,6 +83,10 @@ void RandomForest::build(vector<vector<Field>> X, vector<string> y) {
 
 // Do predict by voting within random trees
 vector<string> RandomForest::pred(vector<vector<Field>> X) {
+	cout << "\n*************************\n";
+	cout << "IntyDic: \n";
+	cout << "0: " << IntyDic[0] << "	" << "1: " << IntyDic[1] << "\n";
+	cout << "*************************\n";
 	vector<string> res(X[0].size());
 	vector<int> ResInt(X[0].size());
 	fill(ResInt.begin(), ResInt.end(), 0);

@@ -133,7 +133,7 @@ DataLoader::DataLoader(const string path, const string type) {
 	cout << "count of records: " << this->count << "\n";
 	cout << "unknown values proportion:\n";
 	for (int i = 0; i < this->header.size(); i++) {
-		cout << this->header[i] << ": ";
+		cout << i << "	" << this->header[i] << ": ";
 		cout << float(this->count_null[i]) / float(this->count) << "\n";
 	}
 	cout << "---------------------------------------------\n";

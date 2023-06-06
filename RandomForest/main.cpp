@@ -4,10 +4,13 @@
 
 using namespace std;
 
+/*
+* Hyper-parameters. Adjust as you need.
+*/
 string train_data_path = "./data/train.csv";
 string test_data_path = "./data/test.csv";
 string res_path = "./res.csv";
-int numtree = 3;
+int numtree = 1;
 int depth = 3;
 int numfea = 3;
 
@@ -48,15 +51,14 @@ int main() {
 	
 	// build random forest
 	RandomForest rf(numtree, depth, numfea);
-	cout << "\n-------------------- log --------------------\n";
 	rf.build(TrainX, Trainy);
-	cout << "RandomForest: Build completed\n";
-	cout << "---------------------------------------------\n";
+	cout << "\n/*** RandomForest: Build completed ***/\n";
 
 	// predict
 	DataLoader TestDataloader(test_data_path, "csv");
 	vector<vector<Field>> TestX = TestDataloader.file;
 	vector<string> header = TestDataloader.header;
+	string ylabel = train_dataloader.header[y_Column];
 	// remove columns
 	for (auto it : Columns) {
 		if (it > y_Column)
@@ -80,21 +82,22 @@ int main() {
 			OutputColumns.push_back(index);
 		cin >> state;
 	}
-
+	// write header to csv
 	ofstream OutputFile(res_path, ios::out);
 	for (int i = 0; i < OutputColumns.size(); i++) {
 		if (i != 0)
 			OutputFile << ",";
 		OutputFile << header[OutputColumns[i]];
 	}
-	OutputFile << "\n";
+	OutputFile << "," << ylabel << "\n";
+	// write results and needed columns to csv
 	for (int i = 0; i < PredRes.size(); i++) {
 		for (int j = 0; j < OutputColumns.size(); j++) {
 			if (j != 0)
 				OutputFile << ",";
 			OutputFile << TestX[OutputColumns[j]][i].str_value;
 		}
-		OutputFile << PredRes[i] << "\n";
+		OutputFile << "," << PredRes[i] << "\n";
 	}
 	return 0;
 }
