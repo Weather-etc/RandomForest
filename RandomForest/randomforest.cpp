@@ -91,7 +91,6 @@ vector<string> RandomForest::pred(vector<vector<Field>> X) {
 		RiTrees.push(state);
 		ResInt = AddVec(ResInt, state.pred(X));
 	}
-
 	for (int i = 0; i < ResInt.size(); i++) {
 		if (ResInt[i] < NumTrees / 2)
 			res[i] = IntyDic[0];

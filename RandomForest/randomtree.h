@@ -39,7 +39,7 @@ struct Node {
 
 class RandomTree_base {
 public:
-	Node root;
+	Node* root;
 	int maxDep;
 	int numFea;
 	int ID;
@@ -60,7 +60,7 @@ public:
 	RandomTree_RI(int maxdep, int numfea, int index) :
 		RandomTree_base(maxdep, numfea, index) {};
 	void build(vector<vector<Field>> X, vector<int> y);
-	Node split(vector<vector<Field>> X, vector<int> y, int depth);
+	Node* split(vector<vector<Field>> X, vector<int> y, int depth);
 
 	int decideRes(vector<int> y);
 };

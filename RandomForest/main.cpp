@@ -1,3 +1,4 @@
+#include <fstream>
 #include "randomforest.h"
 #include "dataloader.h"
 
@@ -55,13 +56,45 @@ int main() {
 	// predict
 	DataLoader TestDataloader(test_data_path, "csv");
 	vector<vector<Field>> TestX = TestDataloader.file;
+	vector<string> header = TestDataloader.header;
 	// remove columns
-	for (auto it : Columns)
-		if (it != y_Column)
+	for (auto it : Columns) {
+		if (it > y_Column)
+			TestX.erase(TestX.begin() + it - 1);
+		else if (it < y_Column)
 			TestX.erase(TestX.begin() + it);
+	}
 	vector<string> PredRes = rf.pred(TestX);
 
 	// write results to csv file
-	cout << PredRes.size();
+	cout << "Please give columns you want to output\n";
+	cout << "Notice that index should be count from 0\n";
+	cout << "If you have input all you want, enter 'exit' to exit\n";
+	vector<int> OutputColumns;
+	cin >> state;
+	while (state != "exit") {
+		int index = atoi(state.c_str());
+		if (index < 0 || index > TrainX.size() - 1)
+			cout << "ERROR: index out of range\n";
+		else
+			OutputColumns.push_back(index);
+		cin >> state;
+	}
+
+	ofstream OutputFile(res_path, ios::out);
+	for (int i = 0; i < OutputColumns.size(); i++) {
+		if (i != 0)
+			OutputFile << ",";
+		OutputFile << header[OutputColumns[i]];
+	}
+	OutputFile << "\n";
+	for (int i = 0; i < PredRes.size(); i++) {
+		for (int j = 0; j < OutputColumns.size(); j++) {
+			if (j != 0)
+				OutputFile << ",";
+			OutputFile << TestX[OutputColumns[j]][i].str_value;
+		}
+		OutputFile << PredRes[i] << "\n";
+	}
 	return 0;
 }

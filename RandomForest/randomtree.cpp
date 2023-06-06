@@ -38,7 +38,7 @@ struct Node {
 
 class RandomTree_base {
 public:
-	Node root;
+	Node* root;
 	int maxDep;
 	int numFea;
 	int ID;
@@ -138,14 +138,13 @@ GroupRes RandomTree_base::GroupData
 vector<int> RandomTree_base::pred(vector<vector<Field>> X) {
 	vector<int> res(X[0].size());
 	for (int i = 0; i < X[0].size(); i++) {
-		Node state = root;
+		Node state = *root;
 		while (state.isLeaf != true && state.R_Vec.size() != 0) {
 			int attr = state.attr;
 			bool flag = false;
-			for (int j = 0; j < X.size(); j++) {
+			for (int j = 0; j < state.R_Vec.size(); j++)
 				if (X[attr][i].str_value == state.R_Vec[j]) 
 					flag = true;
-			}
 			if (flag == false)
 				state = *state.L_Child;
 			else
@@ -164,7 +163,7 @@ public:
 	RandomTree_RI(int maxdep, int numfea, int index) :
 		RandomTree_base(maxdep, numfea, index) {};
 	void build(vector<vector<Field>> X, vector<int> y);
-	Node split(vector<vector<Field>> X, vector<int> y, int depth);
+	Node* split(vector<vector<Field>> X, vector<int> y, int depth);
 
 	int decideRes(vector<int> y);
 };
@@ -204,12 +203,13 @@ int RandomTree_RI::decideRes(vector<int> y) {
 * REFERENCE: 1. "Classification and Regression Trees", by L. Breiman et.al
 *			2. "Random Forest", by Leo Breiman
 */
-Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
+Node* RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	// TODO: stop condition
 	if (depth >= this->maxDep) {
-		Node leafNode;
-		leafNode.isLeaf = true;
-		leafNode.res = decideRes(y);
+		Node* leafNode = (Node*)malloc(sizeof(Node));
+		new (&leafNode->R_Vec) vector<string>();
+		leafNode->isLeaf = true;
+		leafNode->res = decideRes(y);
 		return leafNode;
 	}
 
@@ -223,7 +223,6 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 		swap(indexes[j], indexes[columns - i - 1]);
 		selected[i] = indexes[columns - i - 1];
 	}
-	cout << "select completed\n";
 
 	// do split using variance criterion
 	vector<VarRes> CriRes = Var_Criterion(X, y, selected);
@@ -232,28 +231,21 @@ Node RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	int index = 0;
 	vector<string> BranchR;
 	int FeaSel = -1;
-	cout << "criteria completed\n";
 	for (int i = 0; i < CriRes.size(); i++) 
 		if (CriRes[i].Var < min)
 			index = i;
 	BranchR = CriRes[index].BranchR;
 	FeaSel = selected[index];
-	cout << "FeaSel: " << FeaSel << "\n";
-	cout << "split completed\n";
 
-	Node currNode;
-	currNode.res = decideRes(y);
-	cout << "decideRes completed\n";
-
-	currNode.attr = FeaSel;
-	currNode.isLeaf = false;
-	currNode.R_Vec = BranchR;
+	Node* currNode = (Node*)malloc(sizeof(Node));
+	new (&currNode->R_Vec) vector<string>();
+	currNode->res = decideRes(y);
+	currNode->attr = FeaSel;
+	currNode->isLeaf = false;
+	currNode->R_Vec = BranchR;
 	GroupRes grouped = GroupData(X, y, BranchR, FeaSel);
 
-	cout << "recursiving\n";
-	Node LNode = split(grouped.L_Res, grouped.L_Y, depth + 1);
-	currNode.L_Child = &LNode;
-	Node RNode = split(grouped.R_Res, grouped.R_Y, depth + 1);
-	currNode.R_Child = &RNode;
+	currNode->L_Child = split(grouped.L_Res, grouped.L_Y, depth + 1);
+	currNode->R_Child = split(grouped.R_Res, grouped.R_Y, depth + 1);
 	return currNode;
 }
