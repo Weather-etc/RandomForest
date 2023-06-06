@@ -90,7 +90,7 @@ vector<string> RandomForest::pred(vector<vector<Field>> X) {
 	vector<string> res(X[0].size());
 	vector<int> ResInt(X[0].size());
 	fill(ResInt.begin(), ResInt.end(), 0);
-	int NumTrees = RiTrees.size();
+	int NumTrees = Size;
 
 	RandomTree_RI state = RiTrees.front();
 	RiTrees.pop();
@@ -105,7 +105,7 @@ vector<string> RandomForest::pred(vector<vector<Field>> X) {
 		ResInt = AddVec(ResInt, state.pred(X));
 	}
 	for (int i = 0; i < ResInt.size(); i++) {
-		if (ResInt[i] < NumTrees / 2)
+		if (ResInt[i] != 0)
 			res[i] = IntyDic[0];
 		else
 			res[i] = IntyDic[1];

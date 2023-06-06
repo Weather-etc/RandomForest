@@ -95,6 +95,7 @@ DataLoader::DataLoader(const string path, const string type) {
 				string str = words[i];
 				i++;
 				string state = words[i];
+				str = str + "," + state;
 				while (state[state.length() - 1] != '"') {
 					str = str + "," + state;
 					i++;

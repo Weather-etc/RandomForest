@@ -10,9 +10,9 @@ using namespace std;
 string train_data_path = "./data/train.csv";
 string test_data_path = "./data/test.csv";
 string res_path = "./res.csv";
-int numtree = 1;
-int depth = 3;
-int numfea = 3;
+int numtree = 100;
+int depth = 10;
+int numfea = 4;
 
 int main() {
 	// train random forest
@@ -48,7 +48,18 @@ int main() {
 	sort(Columns.begin(), Columns.end(), greater<int>());
 	for (auto it : Columns)
 		TrainX.erase(TrainX.begin() + it);
-	
+
+	// set hyper parameters
+	string flag;
+	cout << "Please enter hyper parameters, they are 'numtree', 'depth' and 'numfea'\n";
+	cout << "Default numbers are 100, 10, 4. \n";
+	cout << "If you want to change, enter 'y', otherwise enter 'n'";
+	cin >> flag;
+	if (flag == "y") {
+		cout << "Use space bar or enter to separate numbers.";
+		cin >> numtree >> depth >> numfea;
+	}
+
 	// build random forest
 	RandomForest rf(numtree, depth, numfea);
 	rf.build(TrainX, Trainy);
@@ -76,7 +87,7 @@ int main() {
 	cin >> state;
 	while (state != "exit") {
 		int index = atoi(state.c_str());
-		if (index < 0 || index > TrainX.size() - 1)
+		if (index < 0 || index > TestX.size() - 1)
 			cout << "ERROR: index out of range\n";
 		else
 			OutputColumns.push_back(index);

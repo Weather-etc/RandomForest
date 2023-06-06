@@ -6,6 +6,7 @@
 #include <map>
 #include <utility>
 #include <algorithm>
+#include <time.h>
 
 #include "dataloader.h"
 
@@ -139,7 +140,7 @@ vector<int> RandomTree_base::pred(vector<vector<Field>> X) {
 	vector<int> res(X[0].size());
 	for (int i = 0; i < X[0].size(); i++) {
 		Node state = *root;
-		while (state.isLeaf != true && state.R_Vec.size() != 0) {
+		while (state.isLeaf != true) {
 			int attr = state.attr;
 			bool flag = false;
 			for (int j = 0; j < state.R_Vec.size(); j++)
@@ -200,8 +201,10 @@ int RandomTree_RI::decideRes(vector<int> y) {
 	int max_key = 0;
 	int max_value = 0;
 	for (auto it : count_map) {
-		if (it.second > max_value)
+		if (it.second > max_value) {
 			max_key = it.first;
+			max_value = it.second;
+		}
 	}
 	return max_key;
 }
@@ -229,6 +232,7 @@ Node* RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	vector<int> indexes(columns);
 	vector<int> selected(this->numFea);
 	iota(indexes.begin(), indexes.end(), 0);
+	srand((int)time(0));
 	for (int i = 0; i < this->numFea; i++) {
 		int j = rand() % (columns - i);
 		swap(indexes[j], indexes[columns - i - 1]);
