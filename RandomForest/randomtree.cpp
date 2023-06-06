@@ -180,8 +180,8 @@ void RandomTree_RI::build(vector<vector<Field>> X, vector<int> y) {
 	int columns = X[0].size();
 	// do some input checks
 	if (columns < this->numFea) {
-		cout << "ERROR in tree building: " << "only " << columns << " variables are available but "
-			<< this->numFea << " are requested\n";
+		cout << "ERROR in tree building: " << "only " << columns 
+			<< " variables are available but "<< this->numFea << " are requested\n";
 		exit(1);
 	}
 	if (X[0].size() != y.size()) {
@@ -210,6 +210,7 @@ int RandomTree_RI::decideRes(vector<int> y) {
 * 
 * REFERENCE: 1. "Classification and Regression Trees", by L. Breiman et.al
 *			2. "Random Forest", by Leo Breiman
+*			3. "Induction of decision tree", by Quinlan J.R.
 */
 Node* RandomTree_RI::split(vector<vector<Field>> X, vector<int> y, int depth) {
 	// TODO: stop condition

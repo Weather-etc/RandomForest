@@ -17,6 +17,7 @@ class RandomForest {
 public:
 	queue<RandomTree_RI> RiTrees;
 	map<int, string> IntyDic;
+	int Size = 0, Depth = 0, NumFea = 0;
 
 	RandomForest(int size, int depth, int numfea);
 	vector<int> _EncodeY(vector<string> y);

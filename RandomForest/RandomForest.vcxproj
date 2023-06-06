@@ -131,17 +131,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="randomforest.cpp" />
     <ClCompile Include="randomtree.cpp" />
-    <ClCompile Include="table.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dataloader.h" />
     <ClInclude Include="randomforest.h" />
     <ClInclude Include="randomtree.h" />
-    <ClInclude Include="table.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\PythonProject\Local\Kaggle\Titanic\data\test.csv" />
