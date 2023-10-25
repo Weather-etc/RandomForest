@@ -1,16 +1,16 @@
 #include <fstream>
 #include "randomforest.h"
 #include "dataloader.h"
-
+#include <chrono>
 using namespace std;
 
 /*
-* Hyper-parameters. Adjust as you need.
+* Hyper-parameters. Adjust as you need
 */
 string train_data_path = "./data/train.csv";
 string test_data_path = "./data/test.csv";
 string res_path = "./res.csv";
-int numtree = 100;
+int numtree = 200;
 int depth = 10;
 int numfea = 4;
 
@@ -21,11 +21,11 @@ int main() {
 	vector<vector<Field>> TrainX = train_dataloader.file;
 
 	// remove some columns
-	cout << "Please input index of column you want to remove.\n";
-	cout << "Notice that index should be count from 0\n";
-	cout << "If you have input all you want, enter 'exit' to exit\n";
+	// cout << "Please input index of column you want to remove.\n";
+	// cout << "Notice that index should be count from 0\n";
+	// cout << "If you have input all you want, enter 'exit' to exit\n";
 	vector<int> Columns;
-	string state;
+	/*string state;
 	cin >> state;
 	while (state != "exit") {
 		int index = atoi(state.c_str());
@@ -34,12 +34,17 @@ int main() {
 		else
 			Columns.push_back(index);
 		cin >> state;
-	}
+	}*/
+	Columns.push_back(5);
+	Columns.push_back(10);
+	Columns.push_back(11);
+	Columns.push_back(3);
 
 	// select y label
 	int y_Column = -1;
-	cout << "Please select one row as y\n";
-	cin >> y_Column;
+	// cout << "Please select one row as y\n";
+	// cin >> y_Column;
+	y_Column = 1;
 	vector<string> Trainy(TrainX[0].size());
 	for (int i = 0; i < TrainX[0].size(); i++)
 		Trainy[i] = TrainX[y_Column][i].str_value;
@@ -51,19 +56,20 @@ int main() {
 
 	// set hyper parameters
 	string flag;
-	cout << "Please enter hyper parameters, they are 'numtree', 'depth' and 'numfea'\n";
-	cout << "Default numbers are 100, 10, 4. \n";
-	cout << "If you want to change, enter 'y', otherwise enter 'n'";
-	cin >> flag;
+	// cout << "Please enter hyper parameters, they are 'numtree', 'depth' and 'numfea'\n";
+	// cout << "Default numbers are 100, 10, 4. \n";
+	// cout << "If you want to change, enter 'y', otherwise enter 'n'";
+	/*cin >> flag;
 	if (flag == "y") {
 		cout << "Use space bar or enter to separate numbers.";
 		cin >> numtree >> depth >> numfea;
-	}
+	}*/
 
 	// build random forest
+	auto t1 = std::chrono::high_resolution_clock::now();
 	RandomForest rf(numtree, depth, numfea);
 	rf.build(TrainX, Trainy);
-	cout << "\n/*** RandomForest: Build completed ***/\n";
+	// cout << "\n/*** RandomForest: Build completed ***/\n";
 
 	// predict
 	DataLoader TestDataloader(test_data_path, "csv");
@@ -80,10 +86,10 @@ int main() {
 	vector<string> PredRes = rf.pred(TestX);
 
 	// write results to csv file
-	cout << "Please give columns you want to output\n";
+	/*cout << "Please give columns you want to output\n";
 	cout << "Notice that index should be count from 0\n";
-	cout << "If you have input all you want, enter 'exit' to exit\n";
-	vector<int> OutputColumns;
+	cout << "If you have input all you want, enter 'exit' to exit\n";*/
+	/*/vector<int> OutputColumns;
 	cin >> state;
 	while (state != "exit") {
 		int index = atoi(state.c_str());
@@ -92,9 +98,9 @@ int main() {
 		else
 			OutputColumns.push_back(index);
 		cin >> state;
-	}
+	}*/
 	// write header to csv
-	ofstream OutputFile(res_path, ios::out);
+	/*ofstream OutputFile(res_path, ios::out);
 	for (int i = 0; i < OutputColumns.size(); i++) {
 		if (i != 0)
 			OutputFile << ",";
@@ -109,6 +115,9 @@ int main() {
 			OutputFile << TestX[OutputColumns[j]][i].str_value;
 		}
 		OutputFile << "," << PredRes[i] << "\n";
-	}
+	}*/
+	auto t2 = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+	cout << fp_ms.count() << "ms" << endl;
 	return 0;
 }

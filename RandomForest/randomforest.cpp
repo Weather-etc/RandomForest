@@ -11,14 +11,14 @@ vector<int> AddVec(const vector<int>& a, const vector<int>& b) {
 		exit(1);
 	}
 	vector<int> res(a.size());
-	for (int i = 0; i < a.size(); i++) 
+	for (int i = 0; i < a.size(); i++)
 		res[i] = a[i] + b[i];
 	return res;
 }
 
 /*
 * Please Notice that this is NOT SUITABLE for multiclass problems, and
-*  it will raise errors if it is used directly on multiclass problems. 
+*  it will raise errors if it is used directly on multiclass problems.
 */
 
 class RandomForest {
@@ -37,8 +37,13 @@ RandomForest::RandomForest(int size, int depth, int numfea) {
 	Size = size;
 	Depth = depth;
 	NumFea = numfea;
+        // TODO: Multi-threads
+//#pragma omp parallel num_threads(4)
 	for (int i = 0; i < size; i++) {
-		RiTrees.push(RandomTree_RI(depth, numfea, i));
+//#pragma omp critical
+		{
+			RiTrees.push(RandomTree_RI(depth, numfea, i));
+		}
 	}
 }
 
@@ -66,18 +71,35 @@ void RandomForest::build(vector<vector<Field>> X, vector<string> y) {
 		cout << "ERROR: too much features in RandomForest.build()";
 		exit(1);
 	}
-	RandomTree_RI state = RiTrees.front();
-	int flag = state.ID;
+	// RandomTree_RI state = RiTrees.front();
+	vector<RandomTree_RI> states;
+	while(RiTrees.size() > 0) {
+		states.push_back(RiTrees.front());
+		RiTrees.pop();
+	}
+	// int flag = state.ID;
 	vector<int> y_encoded = _EncodeY(y);
-	state.build(X, y_encoded);
-	RiTrees.pop();
-	RiTrees.push(state);
+	//state.build(X, y_encoded);
+	//RiTrees.pop();
+	//RiTrees.push(state);
+//#pragma omp parallel num_threads(6)
+	{
+//#pragma omp for
+		for (int i = 0; i < states.size(); i++) {
+			states[i].build(X, y_encoded);
+		}
+	}
+
+	for (int i = 0; i < states.size(); i++) {
+		RiTrees.push(states[i]);
+	}
+	/*
 	while (flag != RiTrees.front().ID) {
 		state = RiTrees.front();
 		state.build(X, y_encoded);
 		RiTrees.pop();
 		RiTrees.push(state);
-	}
+	}*/
 	return;
 }
 
