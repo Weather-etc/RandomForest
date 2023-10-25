@@ -59,5 +59,8 @@ OpenMP设计的初衷是简化并行编程。它通过在现有的串行代码�
 借助openMP，我们首先考虑进行state.build()函数间的并行。首先，我们重写了此函数，借助临时数组将队列操作转换为数组操作，以便使用openMP的多线程并行化。
 并且我们将对共享变量的操作独立出来，减轻临界区的开销。由此，可以获得五倍左右的加速。
 
+### Result
+![result](https://github.com/Weather-etc/RandomForest/blob/oneAPI/imgs/img1.png)
+
 
 
