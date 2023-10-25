@@ -1,10 +1,19 @@
-# RandomForest
-Random Forest: a C++ implementation, use Titanic dataset from Kaggle to verify its correctness and effectiveness. Referring to "Random Forest" by Leo Breiman, 2001.
-## A complete README is ongoing...
-This is my project of the class "Introduction to Algorithms" and a simple report is available. The report is mainly in Chinese (some words in Englis)
-cuz my English is poor. (Definitions, theorems and proofs are according to L. Breiman's paper and I refer them at the end of my report)
-#
-This is rough and not totally completed. You may find its performance in real dataset is not good(actually, bad), but I argue that it works well to some points.
-It gains robutness and stability as you increasing the number of trees in forest and this is the MOST IMPORTANT reason why Random Forest is popular for so 
-many years. My object is to verify this characteristic but not obtain a high score on Titanic dataset - this does not make sense cuz there are already people who 
-have 1.00 score on it.
+# RandomForest: parallel edition
+## 项目简介
+随机森林的C++实现使用了真实数据集来验证其准确性和有效性。详细算法请参考目录下"Report/REPORT.pdf"，或者Leo Breiman的“Random Forest”（2001）。
+对于并行修订版，使用英特尔oneAPI工具集进行并行化。
+## 算法简介
+随机森林（Random Forest, RF）算法是一类集成学习算法，它由统计学习界的大师级人物 Leo Breiman(1928–2005) 提出。它是若干随机树（Randomized Tree）的组合，这些随机树彼此互相独立，而且在训练样本的选择和树的生长过程中引入随机性以降低树结构分类器较高的方差。随机森林在很多应用场景下具有不错的准确性。
+它具备一些优良特性，比如，较少的超参，高效的训练与预测，多分类和对噪声不敏感等。这些特性使它广泛应用于不同领域，比如计算机视觉，遥感，生物信息学等。特别在计算机视觉领域，随机森林在图像分割、特征点识别、目标检测和人体部件识别等方面都有比较成功的应用。
+### 随机树
+RandomTree 以树的深度作为停止条件，按照 CART 内描述的方法递归地创建树形分类器的节点。
+利用随机抽取和 criteria 选择特征然后分裂节点。具体地，每次分裂节点前，需要从给定的所有特征中不放回地抽取指定个数，然后根据评价函数集 F 中的函数来选择最优的作为当前节点的选定特征。
+在不放回地抽取特征时，可以利用 KnuthDurstenfeld shuffle 算法来避免繁琐的元素插入/删除作。
+### 随机森林
+随机森林中包含有 n 个 随机树 ，这些随机树被放置在一个队列中。
+在训练/预测时，通过 n 次出队、入队来实现对它们的遍历。投票时决定最终的输出时，将按照“少数服从多数的原则”，选择多数分类器的结果作为最终的结果。
+## 商业价值
+金融：由于其能够节省数据管理和预处理的时间，随机森林被大量运用于对高风险客户的欺诈预测。
+健康管理：随机森林被用于计算生物学，帮助医生解决基因表现分类、生物标记物侦测、基因序列注释等
+电子商务：随机森林可被用于推荐引擎的搭建。
+
