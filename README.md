@@ -1,6 +1,6 @@
 # RandomForest: parallel edition
 ## 团队名称
-## 问题陈述
+SupremeDivine
 ## 项目简介
 随机森林的C++实现使用了真实数据集来验证其准确性和有效性。详细算法请参考目录下"Report/REPORT.pdf"，或者Leo Breiman的“Random Forest”（2001）。
 对于并行修订版，使用英特尔oneAPI工具集进行并行化。
