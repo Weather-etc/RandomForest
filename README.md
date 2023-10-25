@@ -60,7 +60,8 @@ OpenMP设计的初衷是简化并行编程。它通过在现有的串行代码�
 并且我们将对共享变量的操作独立出来，减轻临界区的开销。由此，可以获得五倍左右的加速。
 
 ### Result
+根据实验，加速效果较串行算法达到五倍左右。
 ![result](https://github.com/Weather-etc/RandomForest/blob/oneAPI/imgs/img1.png)
-
+![result](https://github.com/Weather-etc/RandomForest/blob/oneAPI/imgs/img2.png)
 
 
